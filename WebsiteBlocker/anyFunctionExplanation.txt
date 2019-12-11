@@ -1,0 +1,142 @@
+98
+
+
+36
+In the python docs page for any, the equivalent code for the any() function is given as:
+
+def any(iterable):
+    for element in iterable:
+        if element:
+            return True
+    return False
+How does this function know what element I wanna test if call it in this form?
+
+any(x > 0 for x in list)
+From the function definition, all I can see is that I'm passing an iterable object. How does the for loop know I am looking for something > 0?
+
+python
+shareimprove this question
+edited Mar 29 '16 at 16:20
+
+Sнаđошƒаӽ
+9,4141010 gold badges4949 silver badges7474 bronze badges
+asked May 12 '13 at 8:18
+
+pythoniku
+2,70244 gold badges1717 silver badges2727 bronze badges
+add a comment
+5 Answers
+activeoldestvotes
+
+145
+
+If you use any(lst) you see that lst is the iterable, which is a list of some items. If it contained [0, False, '', 0.0, [], {}, None] (which all have boolean values of False) then any(lst) would be False. If lst also contained any of the following [-1, True, "X", 0.00001] (all of which evaluate to True) then any(lst) would be True.
+
+In the code you posted, x > 0 for x in lst, this is a different kind of iterable, called a generator expression. Before generator expressions were added to Python, you would have created a list comprehension, which looks very similar, but with surrounding []'s: [x > 0 for x in lst]. From the lst containing [-1, -2, 10, -4, 20], you would get this comprehended list: [False, False, True, False, True]. This internal value would then get passed to the any function, which would return True, since there is at least one True value.
+
+But with generator expressions, Python no longer has to create that internal list of True(s) and False(s), the values will be generated as the any function iterates through the values generated one at a time by the generator expression. And, since any short-circuits, it will stop iterating as soon as it sees the first True value. This would be especially handy if you created lst using something like lst = range(-1,int(1e9)) (or xrange if you are using Python2.x). Even though this expression will generate over a billion entries, any only has to go as far as the third entry when it gets to 1, which evaluates True for x>0, and so any can return True.
+
+If you had created a list comprehension, Python would first have had to create the billion-element list in memory, and then pass that to any. But by using a generator expression, you can have Python's builtin functions like any and all break out early, as soon as a True or False value is seen.
+
+shareimprove this answer
+edited Jun 20 '17 at 14:48
+answered May 12 '13 at 8:38
+
+PaulMcG
+50.3k1111 gold badges7373 silver badges114114 bronze badges
+21
+It would be also worth mentioning that any(x > 0 for x in list) is just a syntactic sugar for any((x > 0 for x in list)). – georg May 12 '13 at 9:53
+3
+You ought to add None to the list of elements which have boolean values of False – Alok Mysore Oct 26 '16 at 16:55
+1
+Adding to @georg, the syntactic sugar is not special to any. def b(x): return x; print b(x > 1 for x in xs) # prints <generator object .. – industryworker3595112 Jan 17 '18 at 7:50
+add a comment
+
+
+29
+
+>>> names = ['King', 'Queen', 'Joker']
+>>> any(n in 'King and john' for n in names)
+True
+
+>>> all(n in 'King and Queen' for n in names)
+False
+It just reduce several line of code into one. You don't have to write lengthy code like:
+
+for n in names:
+    if n in 'King and john':
+       print True
+    else:
+       print False
+shareimprove this answer
+edited Jun 8 '16 at 8:33
+
+Håken Lid
+13.2k77 gold badges3030 silver badges4848 bronze badges
+answered Jun 8 '16 at 7:29
+
+Pranjay Kaparuwan
+46277 silver badges1616 bronze badges
+add a comment
+
+22
+
+(x > 0 for x in list) in that function call creates a generator expression eg.
+
+>>> nums = [1, 2, -1, 9, -5]
+>>> genexp = (x > 0 for x in nums)
+>>> for x in genexp:
+        print x
+
+
+True
+True
+False
+True
+False
+Which any uses, and shortcircuits on encountering the first object that evaluates True
+
+shareimprove this answer
+edited May 12 '13 at 8:25
+answered May 12 '13 at 8:21
+
+jamylak
+94k1919 gold badges191191 silver badges204204 bronze badges
+add a comment
+
+7
+
+It's because the iterable is
+
+(x > 0 for x in list)
+Note that x > 0 returns either True or False and thus you have an iterable of booleans.
+
+shareimprove this answer
+edited May 12 '13 at 8:21
+
+Lev Levitsky
+48.9k1111 gold badges119119 silver badges148148 bronze badges
+answered May 12 '13 at 8:20
+
+freakish
+43.6k77 gold badges103103 silver badges143143 bronze badges
+add a comment
+
+7
+
+Simply saying, any() does this work : according to the condition even if it encounters one fulfilling value in the list, it returns true, else it returns false.
+
+list = [2,-3,-4,5,6]
+
+a = any(x>0 for x in lst)
+
+print a:
+True
+
+
+list = [2,3,4,5,6,7]
+
+a = any(x<0 for x in lst)
+
+print a:
+False
