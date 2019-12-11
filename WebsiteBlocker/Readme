@@ -1,0 +1,3 @@
+This script should be running in the background all the time. to do so we have to add this script as part of the crontab job.
+the blocking websites should be listed in  the host file. for the project purpose the host file was copied from its original location to the root of the project directory
+it will work only if the change is made at the real location
